@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Athletics Mental Skills Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Palette: Deep Blue (#0A3D62) and Vibrant Gold/Orange (#FF8C00) -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F0F4F8; /* Light gray-blue background */
+            color: #1F2937;
+        }
+        .quiz-container {
+            max-width: 800px;
+        }
+        .answer-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid #D1D5DB;
+            min-height: 80px; /* Ensure cards have some minimal height */
+        }
+        .answer-card:hover:not(.selected) {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-color: #0A3D62;
+        }
+        .selected.correct {
+            background-color: #D1FAE5; /* Light Green */
+            border-color: #10B981; /* Green */
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.5);
+            pointer-events: none;
+        }
+        .selected.incorrect {
+            background-color: #FEE2E2; /* Light Red */
+            border-color: #EF4444; /* Red */
+            pointer-events: none;
+        }
+        .unselected {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .feedback-box {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="antialiased p-4 md:p-8">
+
+    <div class="quiz-container mx-auto bg-white rounded-xl shadow-2xl p-6 md:p-10">
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl font-extrabold text-[#0A3D62] border-b-4 border-[#FF8C00] pb-2 inline-block">The Impulse Regulator</h1>
+            <p class="text-lg text-gray-600 mt-2">Level up your mental game: Emotional Control and Routine</p>
+        </header>
+
+        <div id="quiz-area">
+            <div id="question-counter" class="text-center text-sm font-semibold text-gray-500 mb-4">Question 1 of 12</div>
+            
+            <h2 id="question-text" class="text-2xl font-semibold text-gray-800 mb-6 leading-relaxed"></h2>
+
+            <div id="answer-options" class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+                <!-- Answer cards will be injected here -->
+            </div>
+
+            <div id="feedback-section" class="hidden feedback-box p-4 rounded-lg">
+                <h3 id="feedback-title" class="font-bold text-lg mb-2"></h3>
+                <p id="feedback-explanation"></p>
+            </div>
+
+            <div class="text-center mt-8">
+                <button id="next-question-btn" class="hidden px-8 py-3 bg-[#FF8C00] text-white font-bold rounded-lg shadow-lg hover:bg-[#CC7000] transition duration-300 disabled:opacity-50" disabled>
+                    Next Challenge
+                </button>
+                <div id="results" class="hidden text-2xl font-bold text-center mt-6 p-4 bg-gray-100 rounded-lg space-y-4">
+                    <!-- Results content and buttons injected here -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question: "Scenario 1: You foul your first long jump attempt. You feel an immediate surge of anger. What should your immediate response be?",
+                answers: [
+                    { text: "Immediately rush back to the start and try to get the next jump in quickly.", isCorrect: false, explanation: "Rushing is an impulse driven by emotion. **Impulse control** requires taking a controlled pause to reset your body and mind before attempting the next task." },
+                    { text: "Punch your thigh to release the frustration physically.", isCorrect: false, explanation: "Physical outbursts reinforce the emotional reaction. **Emotional regulation** involves a controlled reset, not a reactive physical release." },
+                    { text: "Take a 3-count deep breath, perform your physical reset cue (e.g., tap shoes), and walk slowly back to your mark.", isCorrect: true, explanation: "This is the **controlled reset**. The 3-count breath interrupts the emotional impulse, and the physical cue directs focus back to your performance routine." },
+                    { text: "Blame the wind conditions or the uneven runway for the poor attempt.", isCorrect: false, explanation: "Blaming external factors avoids taking responsibility for your mental reset. Focus on the one thing you can control: your next action." }
+                ]
+            },
+            {
+                question: "Scenario 2: It's 15 minutes before your race. You feel shaky and tense. Which part of your pre-competition routine should you anchor to?",
+                answers: [
+                    { text: "Mentally rehearse the entire race, focusing on every single second.", isCorrect: false, explanation: "Over-rehearsing when tense can increase anxiety. You need a simple, calming anchor." },
+                    { text: "Turn off your music and try to listen to the sounds of the crowd to get hyped up.", isCorrect: false, explanation: "Engaging with external noise increases anxiety. The routine should create a 'bubble' of calm focus." },
+                    { text: "Focus entirely on the next simple physical step in your routine: e.g., changing into spikes or putting on your playlist.", isCorrect: true, explanation: "This uses your **structured routine** as an **anchor**. Focusing on a small, deliberate physical task pulls your mind out of overwhelming anxiety and into the present." },
+                    { text: "Find your coach and ask them for a final burst of motivational talk.", isCorrect: false, explanation: "Relying on external motivation outsources your emotional control. You must use internal techniques first." }
+                ]
+            },
+            {
+                question: "Scenario 3: A rival athlete is trying to distract you at the starting blocks. What should be your self-talk strategy?",
+                answers: [
+                    { text: "Whisper a quick, competitive retort to show them you aren't afraid.", isCorrect: false, explanation: "Reacting is losing control. **Impulse control** means ignoring the bait and focusing on your internal task." },
+                    { text: "Take one final deep breath, close your eyes briefly, and mentally repeat your starting cue (e.g., 'React').", isCorrect: true, explanation: "This uses a **breathing and self-talk pause** to interrupt the impulse to react. You actively reset your focus onto your technical job." },
+                    { text: "Try to make eye contact with the rival to psych them out.", isCorrect: false, explanation: "Staring wastes mental energy on the competitor. All focus should be on your own routine and starting procedure." },
+                    { text: "Tell yourself: 'I hate that guy, I'm going to beat him now.'", isCorrect: false, explanation: "Fueling a race with anger is unpredictable. **Emotional regulation** means generating calm, controlled energy, not aggression." }
+                ]
+            },
+            {
+                question: "Scenario 4: Your coach yells a confusing or conflicting instruction during a fast-paced field event sequence. How do you regulate your frustration before your next attempt?",
+                answers: [
+                    { text: "Immediately turn to the coach and yell back, 'What do you mean by that?!'", isCorrect: false, explanation: "Loud, reactive questioning is uncontrolled. **Self-control** involves separating the emotion from the need for clarity." },
+                    { text: "Use the functional phrase: 'One moment, Coach. I need a reset.' Then perform a 3-count exhale.", isCorrect: true, explanation: "This combines **clear communication** (asserting a need for time) with a **breathing technique** (3-count exhale) to instantly regulate the confusion and frustration." },
+                    { text: "Just try the next attempt quickly using the last thing the coach said.", isCorrect: false, explanation: "Rushing leads to errors. A confusing instruction requires a mental pause and a question, not an impulsive attempt." },
+                    { text: "Ignore the coach's confusing instruction and stick to what you were originally doing.", isCorrect: false, explanation: "Ignoring the coach completely compromises the coaching process. You need to acknowledge and address the instruction, but with control." }
+                ]
+            },
+            {
+                question: "Scenario 5: Your favorite pre-race music playlist suddenly stops working 20 minutes before your event. What is the most controlled response?",
+                answers: [
+                    { text: "Get angry and stop warming up, saying your focus is now ruined.", isCorrect: false, explanation: "Letting a minor technical issue derail your entire focus is a failure of **emotional regulation**." },
+                    { text: "Say: 'This is frustrating, but my body knows the routine.' Immediately switch to silent visualization for the rest of the warm-up.", isCorrect: true, explanation: "This shows **acceptance and adaptability**. You use positive self-talk to acknowledge the failure (frustration) and redirect your focus back to the controllable *process*." },
+                    { text: "Panically try to fix the music for the next ten minutes, ignoring your actual warm-up schedule.", isCorrect: false, explanation: "Spending energy on a broken tool compromises the core routine. **Impulse control** means letting go of the small problem." },
+                    { text: "Borrow a teammate's headphones and ask them to choose the music.", isCorrect: false, explanation: "While a solution, relying on external resources breaks the consistency of *your* pre-race psychological preparation." }
+                ]
+            },
+            {
+                question: "Scenario 6: You are doing a difficult drill, and after repeated failures, you feel the urge to just walk off and quit. What internal phrase should you use for impulse control?",
+                answers: [
+                    { text: "Mentally scream: 'I quit! This is impossible today!'", isCorrect: false, explanation: "Expressing the quit impulse internally reinforces the negative thought. **Self-control** requires replacing the impulse with an instruction." },
+                    { text: "Say: 'My patience is low. Take three deep breaths, analyze one small step, and try again.'", isCorrect: true, explanation: "This is a perfect example of **emotional self-talk**. It acknowledges the emotion ('patience is low') and immediately counters it with a **structured, small-step action plan**." },
+                    { text: "Remind yourself that quitting makes you look weak in front of your teammates.", isCorrect: false, explanation: "Using external judgment (looking weak) as motivation is fragile. Focus on internal commitment." },
+                    { text: "Just keep trying the rep until you eventually get it right.", isCorrect: false, explanation: "Repeated, frustrated failure without a mental reset is not effective training. You need the **pause**." }
+                ]
+            },
+            {
+                question: "Scenario 7: You arrive at a major championship too early and have a long time to wait, increasing your anxiety. What should you do to regulate your internal state?",
+                answers: [
+                    { text: "Pace back and forth constantly to burn off the anxious energy.", isCorrect: false, explanation: "Pacing wastes energy and reinforces the anxiety. You need a deliberate calming technique." },
+                    { text: "Find a quiet, private area and practice 5 minutes of **Square Breathing** (4-4-4-4 technique).", isCorrect: true, explanation: "**Breathing techniques** are the best tool for physiological regulation. Square Breathing is highly effective at activating the parasympathetic (calm) nervous system." },
+                    { text: "Watch your competitors closely to judge their warm-ups.", isCorrect: false, explanation: "Focusing on competitors increases external comparison and anxiety. Your focus must remain internal." },
+                    { text: "Call a friend or family member to chat and pass the time.", isCorrect: false, explanation: "External distraction prevents you from using the waiting period to mentally prepare and regulate your emotions." }
+                ]
+            },
+            {
+                question: "Scenario 8: A fellow competitor complains loudly about a fair call the official just made. You feel your own temper rising. What should your self-control move be?",
+                answers: [
+                    { text: "Shake your head in disagreement with the competitor to show solidarity.", isCorrect: false, explanation: "Expressing solidarity with uncontrolled emotion compromises your own focus and self-control." },
+                    { text: "Walk 10 steps away from the scene, focus on your feet, and repeat the cue: 'Stay in my lane.'", isCorrect: true, explanation: "This is an effective **impulse control** strategy. It uses a **physical distance** move combined with a **mental cue** to prevent emotional contagion and keep focus on your job." },
+                    { text: "Stare at the official to judge if they made the correct call.", isCorrect: false, explanation: "Refusing to accept the official's call wastes emotional energy. The call is final; your reaction is the only variable you control." },
+                    { text: "Tell the competitor they should calm down and focus on their next attempt.", isCorrect: false, explanation: "Telling others how to feel is aggressive and shifts your focus to their problem." }
+                ]
+            },
+            {
+                question: "Scenario 9: You are standing for the National Anthem just before your final race. Which final routine element shows the best lock-in and emotional control?",
+                answers: [
+                    { text: "Look around at the crowd and take a moment to enjoy the atmosphere.", isCorrect: false, explanation: "While appreciation is good, this is the final lock-in moment. Your mind must be 100% focused on execution." },
+                    { text: "Run through the race plan in your head, thinking about strategy changes.", isCorrect: false, explanation: "Mental analysis should be completed *before* this moment. Now is the time for single-minded focus." },
+                    { text: "Perform a final, silent body scan, checking for tension in your shoulders and hands, and release it with a deliberate exhale.", isCorrect: true, explanation: "This is the ideal **routine lock-in**. It's a quick, physical check for emotional tension and a controlled release, ensuring you are physically relaxed and mentally present for the gun." },
+                    { text: "Focus on the finish line and visualize yourself winning the medal.", isCorrect: false, explanation: "Visualizing the *outcome* (winning) can increase anxiety. Focus on the *process* (the body scan and release)." }
+                ]
+            },
+            {
+                question: "Scenario 10: During warm-ups, you realize you forgot a small, non-essential item (like your lucky wristband). What is the controlled self-talk response?",
+                answers: [
+                    { text: "Get slightly upset and look for someone to blame for the mistake.", isCorrect: false, explanation: "Blame is an impulsive reaction. **Emotional regulation** means accepting reality instantly." },
+                    { text: "Say: 'This is frustrating, but this band doesn't run the race. I'll focus 100% on my execution cues.'", isCorrect: true, explanation: "This is powerful **self-talk for acceptance**. You acknowledge the frustration but redirect the focus back to the only thing that matters—your physical performance and internal routine." },
+                    { text: "Try to borrow a similar item from a teammate to replace it quickly.", isCorrect: false, explanation: "Disturbing a teammate's pre-comp focus over a non-essential item shows poor judgment." },
+                    { text: "Mentally plan where you will buy a replacement immediately after the race.", isCorrect: false, explanation: "Planning post-race tasks breaks the 'bubble' of competition focus." }
+                ]
+            },
+            {
+                question: "Scenario 11: You are racing a middle distance event (800m/1500m), and the pace suddenly drops, causing you anxiety about losing position. How do you maintain impulse control?",
+                answers: [
+                    { text: "Impulsively sprint out of the pack to take the lead immediately.", isCorrect: false, explanation: "Rushing out is an emotional impulse, often leading to wasted energy. **Impulse control** means sticking to the strategic plan." },
+                    { text: "Use your controlled self-talk: 'Patience. Trust the plan. Wait for my move point.'", isCorrect: true, explanation: "This is **controlled, strategic self-talk**. It regulates the anxiety and reinforces commitment to the pre-race plan, preventing an impulsive decision." },
+                    { text: "Yell at the leader to speed up the pace.", isCorrect: false, explanation: "Yelling at a competitor is a waste of energy and poor impulse control." },
+                    { text: "Spend the next lap calculating the exact new pace needed.", isCorrect: false, explanation: "Calculations should be done before the race. Focus on simple, active cues during the race." }
+                ]
+            },
+            {
+                question: "Scenario 12: You notice a key technical failure on your last rep (e.g., throwing elbow dropped). What is the most controlled mental response before your next rep?",
+                answers: [
+                    { text: "Mentally replay the poor rep repeatedly to figure out exactly why it failed.", isCorrect: false, explanation: "Repeated mental replay reinforces the negative movement pattern. You need to focus on the correction." },
+                    { text: "Use a single instructional cue: 'Elbow up.' Then visualize the perfect execution twice before the next rep.", isCorrect: true, explanation: "This is ideal **emotional regulation** combined with **functional correction**. It uses a single, positive cue to replace the memory of the error with the feeling of the correct motion." },
+                    { text: "Sigh loudly to demonstrate your frustration to the coach.", isCorrect: false, explanation: "Loud sighing is an uncontrolled emotional expression. Keep the reset internal." },
+                    { text: "Mentally punish yourself for making such a basic mistake.", isCorrect: false, explanation: "Self-punishment fuels anxiety. **Positive self-talk** is always instructional and supportive." }
+                ]
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let quizCompleted = false;
+        let sessionAttempts = []; // New array to store detailed attempt results
+
+        const questionText = document.getElementById('question-text');
+        const answerOptions = document.getElementById('answer-options');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const feedbackSection = document.getElementById('feedback-section');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackExplanation = document.getElementById('feedback-explanation');
+        const questionCounter = document.getElementById('question-counter');
+        const resultsDiv = document.getElementById('results');
+
+        // --- UTF-8 Safe Encoding/Decoding for btoa/atob ---
+        // Encodes a Unicode string into a Base64 string that can be safely placed in HTML attributes.
+        const b64EncodeUnicode = (str) => btoa(
+            encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+                (match, p1) => String.fromCharCode('0x' + p1)
+            )
+        );
+
+        // Decodes a Base64 string back into a Unicode string.
+        const b64DecodeUnicode = (str) => decodeURIComponent(
+            atob(str).split('').map((c) => {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join('')
+        );
+        // --- End UTF-8 Safe Encoding/Decoding ---
+
+
+        // Fisher-Yates shuffle algorithm
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function renderQuestion() {
+            if (currentQuestionIndex >= quizData.length) {
+                showResults();
+                return;
+            }
+
+            const currentQuestion = quizData[currentQuestionIndex];
+            
+            // Shuffle the answers before rendering them
+            shuffleArray(currentQuestion.answers);
+            
+            // Reset interface elements that may have been hidden by showResults or reset
+            answerOptions.innerHTML = '';
+            feedbackSection.classList.add('hidden');
+            nextQuestionBtn.classList.add('hidden');
+            nextQuestionBtn.disabled = true;
+            resultsDiv.classList.add('hidden');
+
+            questionText.classList.remove('hidden');
+            answerOptions.classList.remove('hidden');
+            questionCounter.classList.remove('hidden');
+
+            // Update question and counter
+            questionText.textContent = currentQuestion.question;
+            questionCounter.textContent = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
+
+            // Render answers
+            currentQuestion.answers.forEach((answer, index) => {
+                const card = document.createElement('div');
+                card.classList.add('answer-card', 'p-4', 'rounded-lg', 'bg-white', 'shadow-md', 'flex', 'items-center', 'text-base', 'font-medium');
+                card.dataset.index = index;
+                // Use letters A, B, C, D for the four options
+                card.innerHTML = `<span class="mr-3 font-bold text-[#FF8C00]">${String.fromCharCode(65 + index)}.</span> ${answer.text}`;
+                card.addEventListener('click', () => checkAnswer(card, answer));
+                answerOptions.appendChild(card);
+            });
+        }
+
+        function checkAnswer(selectedCard, selectedAnswer) {
+            if (quizCompleted) return;
+
+            const allAnswerCards = answerOptions.querySelectorAll('.answer-card');
+            
+            // Disable all cards and dim unselected ones
+            allAnswerCards.forEach(card => {
+                card.classList.add('unselected');
+                card.removeEventListener('click', checkAnswer);
+            });
+            
+            selectedCard.classList.remove('unselected');
+            selectedCard.classList.add('selected');
+
+            // Find the correct answer object for logging, regardless of user choice
+            const currentQuestionData = quizData[currentQuestionIndex];
+            const correctAnswerObject = currentQuestionData.answers.find(a => a.isCorrect);
+
+            // Store attempt data
+            const attemptData = {
+                question: currentQuestionData.question,
+                selectedText: selectedAnswer.text,
+                isCorrect: selectedAnswer.isCorrect,
+                correctAnswerText: correctAnswerObject.text,
+                correctExplanation: correctAnswerObject.explanation
+            };
+            sessionAttempts.push(attemptData);
+
+
+            // Set feedback based on correctness
+            if (selectedAnswer.isCorrect) {
+                score++;
+                selectedCard.classList.add('correct');
+                feedbackTitle.textContent = "Awesome choice! That's the mindset of a champion.";
+                feedbackTitle.classList.remove('text-red-700');
+                feedbackTitle.classList.add('text-green-700');
+                feedbackSection.classList.remove('bg-red-100');
+                feedbackSection.classList.add('bg-green-100');
+            } else {
+                selectedCard.classList.add('incorrect');
+                feedbackTitle.textContent = "Good try, but let's sharpen that focus.";
+                feedbackTitle.classList.remove('text-green-700');
+                feedbackTitle.classList.add('text-red-700');
+                feedbackSection.classList.remove('bg-green-100');
+                feedbackSection.classList.add('bg-red-100');
+                
+                // Highlight the correct answer
+                const correctCard = Array.from(allAnswerCards).find(card => {
+                    // Find the card whose content includes the correct answer text
+                    return card.textContent.includes(correctAnswerObject.text);
+                });
+                
+                if (correctCard) {
+                    correctCard.classList.remove('unselected');
+                    correctCard.classList.add('selected', 'correct');
+                }
+            }
+
+            feedbackExplanation.textContent = selectedAnswer.explanation;
+            feedbackSection.classList.remove('hidden');
+            
+            // Update the text for the next button if it's the last question
+            if (currentQuestionIndex === quizData.length - 1) {
+                nextQuestionBtn.textContent = "See Results";
+            } else {
+                nextQuestionBtn.textContent = "Next Challenge";
+            }
+
+            nextQuestionBtn.classList.remove('hidden');
+            nextQuestionBtn.disabled = false;
+        }
+
+        function getResultMessage(score, totalQuestions) {
+            if (score === totalQuestions) {
+                return {
+                    title: `PERFECT SCORE! 🥇 ${score}/${totalQuestions}`,
+                    text: `You are an emotional master! Your **Regulation** and **Impulse Control** are top-tier. You use your routine and breathing to manage pressure like a seasoned professional.`,
+                    color: 'text-green-700'
+                };
+            } else if (score >= totalQuestions * 0.75) {
+                return {
+                    title: `GREAT JOB! 🎉 ${score}/${totalQuestions}`,
+                    text: `Excellent understanding of **Emotional Control**. You know how to pause before reacting and use your routine as an anchor. Just a few more reps to completely eliminate impulse decisions.`,
+                    color: 'text-blue-700'
+                };
+            } else {
+                return {
+                    title: `GOOD EFFORT! 👍 ${score}/${totalQuestions}`,
+                    text: `This quiz shows a great opportunity to improve your **Impulse Control**. Focus on practicing the 3-count breath technique and ensuring every step of your pre-event routine is a non-negotiable mental anchor.`,
+                    color: 'text-orange-700'
+                };
+            }
+        }
+
+        function showResults() {
+            quizCompleted = true;
+            questionText.classList.add('hidden');
+            answerOptions.classList.add('hidden');
+            feedbackSection.classList.add('hidden');
+            nextQuestionBtn.classList.add('hidden');
+            questionCounter.classList.add('hidden');
+            
+            const totalQuestions = quizData.length;
+            const result = getResultMessage(score, totalQuestions);
+
+            // --- Start Detailed Summary Generation ---
+            let detailedSummaryHTML = '';
+            let detailedSummaryText = ''; // For the copy function
+
+            sessionAttempts.forEach((attempt, index) => {
+                const statusIcon = attempt.isCorrect ? '✅' : '❌';
+                const statusColor = attempt.isCorrect ? 'text-green-600' : 'text-red-600';
+                const questionLetter = String.fromCharCode(65 + index);
+
+                detailedSummaryHTML += `
+                    <div class="border-t border-gray-300 pt-4 mt-4 text-left">
+                        <p class="text-lg font-bold ${statusColor}">${statusIcon} Question ${index + 1}: ${attempt.question}</p>
+                        <p class="mt-1 text-sm text-gray-700"><span class="font-semibold">Your Choice:</span> ${attempt.selectedText}</p>
+                        <p class="mt-1 text-sm ${statusColor} font-semibold"><span class="text-gray-900">Correct Answer:</span> ${attempt.correctAnswerText}</p>
+                        <p class="mt-2 text-sm text-gray-700">***Explanation: ${attempt.correctExplanation}</p>
+                    </div>
+                `;
+                
+                detailedSummaryText += `
+--- Question ${index + 1} ---
+Q: ${attempt.question}
+Your Choice (${statusIcon}): ${attempt.selectedText}
+Correct Answer: ${attempt.correctAnswerText}
+Explanation: ${attempt.correctExplanation}
+`;
+            });
+            // --- End Detailed Summary Generation ---
+
+            const resultsHTML = `
+                <div class="${result.color} text-4xl font-extrabold mb-2">${result.title}</div>
+                <div class="text-xl font-medium text-gray-800 mb-6">${result.text}</div>
+                
+                <div id="detailed-results-container" class="max-h-96 overflow-y-auto p-4 border rounded-lg bg-white shadow-inner">
+                    <h4 class="text-xl font-bold text-[#0A3D62] mb-3 border-b pb-2">Full Test Review</h4>
+                    ${detailedSummaryHTML}
+                </div>
+
+                <div class="space-x-4 pt-4">
+                    <button id="copy-results-btn" class="px-6 py-3 bg-[#0A3D62] text-white font-bold rounded-lg shadow-md hover:bg-[#082C4A] transition duration-300" data-summary="${b64EncodeUnicode(detailedSummaryText)}">
+                        Copy Results
+                    </button>
+                    <button id="reset-test-btn" class="px-6 py-3 border-2 border-[#FF8C00] text-[#FF8C00] font-bold rounded-lg shadow-md hover:bg-yellow-50 transition duration-300">
+                        Reset Test
+                    </button>
+                </div>
+            `;
+
+            resultsDiv.innerHTML = resultsHTML;
+            resultsDiv.classList.remove('hidden');
+
+            document.getElementById('copy-results-btn').addEventListener('click', copyResults);
+            document.getElementById('reset-test-btn').addEventListener('click', resetQuiz);
+        }
+
+        function copyResults() {
+            const totalQuestions = quizData.length;
+            const result = getResultMessage(score, totalQuestions);
+            // Decode the detailed summary text using the new safe function
+            const detailedSummaryText = b64DecodeUnicode(document.getElementById('copy-results-btn').dataset.summary); 
+
+            const copyText = `
+--- Athletics Mental Skills Quiz Results ---
+Athlete: [Client Name, Date]
+Score: ${score} out of ${totalQuestions}
+Summary: ${result.title.split(' ')[0]}!
+Mental State Feedback: ${result.text}
+
+==================================================
+        
+FULL QUESTION-BY-QUESTION REVIEW
+${detailedSummaryText}
+--- End of Test ---
+`;
+            // Use document.execCommand('copy') for better compatibility in iFrames
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = copyText;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+            
+            // Provide visual confirmation (non-alert version)
+            const copyBtn = document.getElementById('copy-results-btn');
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => { copyBtn.textContent = originalText; }, 1500);
+        }
+
+        function resetQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            quizCompleted = false;
+            sessionAttempts = []; // Critical: Clear the stored attempts
+            
+            // Re-show main quiz containers and hide results
+            questionText.classList.remove('hidden');
+            answerOptions.classList.remove('hidden');
+            questionCounter.classList.remove('hidden');
+            resultsDiv.classList.add('hidden');
+            
+            renderQuestion();
+        }
+
+        // Event listener for Next button
+        nextQuestionBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            renderQuestion();
+        });
+
+        // Initialize quiz
+        document.addEventListener('DOMContentLoaded', renderQuestion);
+    </script>
+
+</body>
+</html>
